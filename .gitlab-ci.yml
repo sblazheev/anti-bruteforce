@@ -14,8 +14,8 @@ workflow:
 
 stages:
     - test
-    - build
-    - deploy
+    #- build
+    #- deploy
 
 format:
     stage: test
