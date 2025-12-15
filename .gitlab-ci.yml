@@ -20,28 +20,21 @@ stages:
 format:
     stage: test
     script:
-      - go fmt $(go list ./...)
-      - go vet $(go list ./...)
+      - (which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v2.7.2
+      - golangci-lint run ./...
     
 test:     
     stage: test
     script:
-      - go test -race $(go list ./...)
+      - go test -race -count 100 $(go list ./...)
 
 compile:
     stage: build
     script:
-      - apt update
-      - apt install unzip
-      - go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-      - go install github.com/go-micro/generator/cmd/protoc-gen-micro@latest
-      - curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v21.9/protoc-21.9-linux-x86_64.zip" --output protoc-21.9-linux-x86_64.zip
-      - unzip protoc-21.9-linux-x86_64.zip -d protoc/
-      - ./protoc/bin/protoc --go_opt=paths=source_relative --micro_opt=paths=source_relative --proto_path=./proto/ --micro_out=./proto/ --go_out=./proto/ ./proto/greeter.proto
-      - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/service
+      - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/build
     artifacts:
       paths:
-        - service
+        - build
 
 deploy:
     stage: deploy
