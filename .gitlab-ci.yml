@@ -39,6 +39,6 @@ compile:
 deploy:
     stage: deploy
     rules:
-      - echo "deploy" #if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
-    #script: echo "Define your deployment script!"
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+    script: echo "Define your deployment script!"
     environment: production
