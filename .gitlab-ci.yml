@@ -14,8 +14,8 @@ workflow:
 
 stages:
     - test
-    #- build
-    #- deploy
+    - build
+    - deploy
 
 format:
     stage: test
@@ -31,7 +31,8 @@ test:
 compile:
     stage: build
     script:
-      - go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/build
+      - echo "build"
+      #- go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/build
     artifacts:
       paths:
         - build
@@ -39,6 +40,7 @@ compile:
 deploy:
     stage: deploy
     rules:
-      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+      - echo "deploy"
+      #- if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
     script: echo "Define your deployment script!"
     environment: production
