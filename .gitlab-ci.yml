@@ -32,7 +32,7 @@ compile:
     stage: build
     script:
       - echo "build"
-      #- go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/build
+      - #go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/build
     artifacts:
       paths:
         - build
@@ -41,6 +41,6 @@ deploy:
     stage: deploy
     rules:
       - echo "deploy"
-      #- if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
+      - #if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"
     script: echo "Define your deployment script!"
     environment: production
