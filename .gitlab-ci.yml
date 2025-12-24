@@ -31,7 +31,8 @@ test:
 compile:
     stage: build
     script:
-      - go build -v -o $CI_PROJECT_DIR/build -ldflags "-X main.release="develop" -X main.buildDate=$CI_JOB_STARTED_AT -X main.gitHash=$CI_COMMIT_SHA"
+      - mkdir -p build
+      - go build -v -o build/$CI_PROJECT_NAME -ldflags "-X main.release="develop" -X main.buildDate=$CI_JOB_STARTED_AT -X main.gitHash=$CI_COMMIT_SHA" .
     artifacts:
       paths:
         - build

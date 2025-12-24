@@ -26,6 +26,7 @@ type Config struct {
 }
 
 type AppConfig struct {
+	Overlapped bool
 }
 
 type LogConfig struct {

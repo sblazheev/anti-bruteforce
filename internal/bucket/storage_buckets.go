@@ -2,10 +2,11 @@ package bucket
 
 import (
 	"context"
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common"
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config"
 	"sync"
 	"time"
+
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common" //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config" //nolint:depguard
 )
 
 type StorageBuckets struct {
@@ -81,8 +82,7 @@ func (s *StorageBuckets) remove() {
 			delete(s.buckets, key)
 		}
 	}
-	timeElapsed := time.Now().Sub(now)
-	s.logger.Info("Сleanup buckets by TTL", "time", timeElapsed.Seconds(), "buckets", len(s.buckets))
+	s.logger.Info("Сleanup buckets by TTL", "time", time.Since(now).Seconds(), "buckets", len(s.buckets))
 }
 
 func (s *StorageBuckets) reset() {

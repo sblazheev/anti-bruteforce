@@ -2,7 +2,8 @@ package app
 
 import (
 	"context"
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/bucket"
+
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/bucket" //nolint:depguard
 	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common" //nolint:depguard
 	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config" //nolint:depguard
 )
@@ -31,9 +32,9 @@ func (app *App) CheckAuthLogin(login string) (bool, error) {
 }
 
 func (app *App) CheckAuthIP(ip string) (bool, error) {
-	return app.storageLogin.Allow(*app.ctx, ip)
+	return app.storageIP.Allow(*app.ctx, ip)
 }
 
 func (app *App) CheckAuthPassword(password string) (bool, error) {
-	return app.storageLogin.Allow(*app.ctx, password)
+	return app.storagePassword.Allow(*app.ctx, password)
 }

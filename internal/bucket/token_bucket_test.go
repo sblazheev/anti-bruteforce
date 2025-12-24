@@ -1,15 +1,18 @@
 package bucket
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require" //nolint:depguard
 )
 
 func TestTokenBucket(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Capacity", func(t *testing.T) {
+		t.Parallel()
+
 		tokenBucket := NewTokenBucket(2, 1)
 		allowCount := 0
 		for i := 0; i < 2; i++ {
@@ -21,6 +24,8 @@ func TestTokenBucket(t *testing.T) {
 	})
 
 	t.Run("Capacity overflow", func(t *testing.T) {
+		t.Parallel()
+
 		tokenBucket := NewTokenBucket(2, 1)
 		allowCount := 0
 		for i := 0; i < 3; i++ {
@@ -33,6 +38,8 @@ func TestTokenBucket(t *testing.T) {
 	})
 
 	t.Run("RefillRate", func(t *testing.T) {
+		t.Parallel()
+
 		tokenBucket := NewTokenBucket(1, 2)
 		allowCount := 0
 		for i := 0; i < 3; i++ {
@@ -45,6 +52,8 @@ func TestTokenBucket(t *testing.T) {
 	})
 
 	t.Run("RefillRate overflow", func(t *testing.T) {
+		t.Parallel()
+
 		tokenBucket := NewTokenBucket(1, 1)
 		allowCount := 0
 		for i := 0; i < 3; i++ {

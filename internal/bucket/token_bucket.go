@@ -46,10 +46,8 @@ func (tb *TokenBucket) isExpired(ttl time.Duration) bool {
 	tb.mu.RLock()
 	defer tb.mu.RUnlock()
 	now := time.Now()
-	if now.Sub(tb.lastRefill()) > ttl {
-		return true
-	}
-	return false
+
+	return now.Sub(tb.lastRefill()) > ttl
 }
 
 func (tb *TokenBucket) Request(tokens float32) bool {

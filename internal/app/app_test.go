@@ -11,7 +11,7 @@ import (
 )
 
 func TestApp(t *testing.T) {
-	c, err := config.New("")
+	c, _ := config.New("")
 	c.LimitsConfig = config.LimitsConfig{Login: config.LimitConfig{
 		MaxPerMinute:       1,
 		CleanupInterval:    2 * 60 * time.Second,

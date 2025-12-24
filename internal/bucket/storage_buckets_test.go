@@ -3,13 +3,14 @@ package bucket
 import (
 	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v7"
-	"github.com/stretchr/testify/require"
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config"
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/logger"
 	"runtime"
 	"testing"
 	"time"
+
+	"github.com/brianvoe/gofakeit/v7"                     //nolint:depguard
+	"github.com/stretchr/testify/require"                 //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config" //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/logger" //nolint:depguard
 )
 
 func printMemoryUsage(numberBuckets int) string {
@@ -40,6 +41,8 @@ func TestStorageBuckets(t *testing.T) {
 	log := logger.New(&cfg.Logger)
 
 	t.Run("Ban", func(t *testing.T) {
+		t.Parallel()
+
 		allowCount := 0
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
@@ -49,7 +52,7 @@ func TestStorageBuckets(t *testing.T) {
 			log,
 		)
 
-		for login, _ := range logins {
+		for login := range logins {
 			allow, _ := storageBuckets.Allow(ctx, login)
 			if allow {
 				allowCount++
@@ -59,7 +62,7 @@ func TestStorageBuckets(t *testing.T) {
 		require.Equal(t, len(logins), storageBuckets.Len())
 
 		allowCount = 0
-		for login, _ := range logins {
+		for login := range logins {
 			allow, _ := storageBuckets.Allow(ctx, login)
 			if allow {
 				allowCount++
@@ -69,10 +72,11 @@ func TestStorageBuckets(t *testing.T) {
 		storageBuckets.reset()
 		require.Equal(t, 0, allowCount)
 		log.Info("Memory", "stats", printMemoryUsage(len(logins)))
-
 	})
 
 	t.Run("CleanUp", func(t *testing.T) {
+		t.Parallel()
+
 		allowCount := 0
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
@@ -91,10 +95,8 @@ func TestStorageBuckets(t *testing.T) {
 		require.Equal(t, 10, storageBuckets.Len())
 
 		time.Sleep(CleanupInterval * 2)
-		//log.Info("Memory", "stats", printMemoryUsage(len(logins)))
 		require.Equal(t, 0, storageBuckets.Len())
 		cancel()
 		log.Info("Memory", "stats", printMemoryUsage(len(logins)))
 	})
-
 }

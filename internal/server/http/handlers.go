@@ -3,14 +3,14 @@ package internalhttp
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common/dto"
 	"net/http"
 	"strconv"
 
-	"github.com/go-playground/validator/v10"
-	httpSwagger "github.com/swaggo/http-swagger/v2"       //nolint:depguard
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/app"    //nolint:depguard
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common" //nolint:depguard
+	"github.com/go-playground/validator/v10"                  //nolint:depguard
+	httpSwagger "github.com/swaggo/http-swagger/v2"           //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/app"        //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common"     //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common/dto" //nolint:depguard
 )
 
 type HTTPHandler struct {
@@ -85,7 +85,7 @@ func (h *HTTPHandler) allowAuthHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusTooManyRequests)
 	}
-	w.Write([]byte(fmt.Sprintf("ok=%v", allow)))
+	fmt.Fprintf(w, "ok=%v", allow)
 }
 
 func JSONError(httpcode int, code string, messageError string, err error, w http.ResponseWriter) {
