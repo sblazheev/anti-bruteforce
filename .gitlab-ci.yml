@@ -31,7 +31,7 @@ test:
 compile:
     stage: build
     script:
-      - echo "build" #go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/build
+      - go build -v -o $CI_PROJECT_DIR/build -ldflags "-X main.release="develop" -X main.buildDate=$CI_JOB_STARTED_AT -X main.gitHash=$CI_COMMIT_SHA"
     artifacts:
       paths:
         - build
