@@ -5,3 +5,10 @@ logger:
 server:
   host: 0.0.0.0
   port: 80
+
+limits:
+  login:
+    maxPerMinute: 1
+    refillRateIsSecond: 0.00001
+    cleanupInterval: 120 sec
+    ttl: 120 sec

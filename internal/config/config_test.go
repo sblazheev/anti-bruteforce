@@ -10,14 +10,10 @@ func TestConfig(t *testing.T) {
 	t.Run("Config create", func(t *testing.T) {
 		config, err := New("./test/config.yaml")
 		require.Equal(t, &Config{
-			App: AppConfig{
-				Overlapping: true,
-			},
+			App: AppConfig{},
 			Logger: LogConfig{
 				Level: "info",
 			},
-			Scheduler: SchedulerConfig{Chunk: 100, KeepDays: 365, Interval: 10},
-			Sender:    SenderConfig{Interval: 10},
 		}, config)
 		require.NoError(t, err)
 	})

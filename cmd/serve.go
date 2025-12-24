@@ -35,7 +35,7 @@ var serveCmd = &cobra.Command{
 		}
 		logg := logger.New(&cfg.Logger)
 
-		app, err := app.New(cfg, logg, &ctx)
+		app, err := app.New(&ctx, cfg, logg)
 		if err != nil {
 			logg.Error("create app", "error", err)
 			os.Exit(1)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/heetch/confita"              //nolint:depguard
 	"github.com/heetch/confita/backend/env"  //nolint:depguard
@@ -17,22 +18,31 @@ var (
 )
 
 type Config struct {
-	App       AppConfig
-	Logger    LogConfig
-	Storage   StorageConfig
-	HTTP      HTTPConfig
-	Grpc      GrpcConfig
-	Broker    BrokerConfig
-	Scheduler SchedulerConfig
-	Sender    SenderConfig
+	App          AppConfig
+	Logger       LogConfig
+	Storage      StorageConfig
+	HTTP         HTTPConfig
+	LimitsConfig LimitsConfig `yaml:"limits" env:"LIMITS"`
 }
 
 type AppConfig struct {
-	Overlapping bool `config:"overlapping"`
 }
 
 type LogConfig struct {
 	Level string `config:"level"`
+}
+
+type LimitsConfig struct {
+	Login    LimitConfig `yaml:"login" env-prefix:"LOGIN_"`
+	Password LimitConfig `yaml:"password" env-prefix:"PASSWORD_"`
+	IP       LimitConfig `yaml:"ip" env-prefix:"IP_"`
+}
+
+type LimitConfig struct {
+	MaxPerMinute       float32       `yaml:"maxPerMinute" env:"MAX_PER_MINUTE"`
+	RefillRateIsSecond float32       `yaml:"refillRateInSecond" env:"REFILL_RATE_IN_SECOND"`
+	CleanupInterval    time.Duration `yaml:"cleanupInterval" env:"CLEANUP_INTERVAL"`
+	TTL                time.Duration `yaml:"ttl" env:"TTL"`
 }
 
 type StorageConfig struct {
@@ -72,18 +82,13 @@ type SenderConfig struct {
 func New(configPath string) (*Config, error) {
 	loggerLeverPosible := []string{"info", "warn", "debug", "error", ""}
 	cfg := Config{
-		App: AppConfig{
-			Overlapping: true,
-		},
+		App: AppConfig{},
 		Logger: LogConfig{
 			Level: "info",
 		},
-		Storage:   StorageConfig{},
-		HTTP:      HTTPConfig{},
-		Grpc:      GrpcConfig{},
-		Broker:    BrokerConfig{},
-		Scheduler: SchedulerConfig{Chunk: 100, KeepDays: 365, Interval: 10},
-		Sender:    SenderConfig{Interval: 10},
+		Storage:      StorageConfig{},
+		HTTP:         HTTPConfig{},
+		LimitsConfig: LimitsConfig{},
 	}
 	var loader *confita.Loader
 	if len(configPath) > 0 {
@@ -99,7 +104,7 @@ func New(configPath string) (*Config, error) {
 
 	err := loader.Load(context.Background(), &cfg)
 	if err != nil {
-		return &cfg, ErrLoadConfig
+		return &cfg, err
 	}
 
 	if !slices.Contains(loggerLeverPosible, cfg.Logger.Level) {

@@ -1,4 +1,26 @@
 basePath: /
+definitions:
+  Event:
+    properties:
+      ip:
+        example: Description
+        type: string
+      login:
+        example: ""
+        type: string
+      password:
+        example: pass
+        type: string
+    type: object
+  JSONError:
+    properties:
+      code:
+        type: string
+      description:
+        type: string
+      message:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -15,7 +37,46 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Anti Bruteforce API
   version: "0.1"
-paths: {}
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Попытка авторизации
+      parameters:
+      - description: Создание события
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Event'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/JSONError'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/JSONError'
+      summary: Попытка авторизации
+      tags:
+      - Auth
+  /ping:
+    get:
+      description: Пинг-Понг
+      responses:
+        "200":
+          description: OK
+      summary: Пинг-Понг
+      tags:
+      - Test
 securityDefinitions:
   BasicAuth:
     type: basic
