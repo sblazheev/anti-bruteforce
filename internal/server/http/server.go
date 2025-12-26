@@ -4,7 +4,6 @@ import (
 	"context"
 	"net"
 	"net/http"
-	"time"
 
 	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/app"              //nolint:depguard
 	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common"           //nolint:depguard
@@ -68,8 +67,8 @@ func NewServer(app app.App, config config.HTTPConfig, logger common.LoggerInterf
 		server: &http.Server{
 			Addr:           address,
 			Handler:        errorJSONMiddleware(loggingMiddleware(httpHandler.mux, logger)),
-			ReadTimeout:    10 * time.Second,
-			WriteTimeout:   10 * time.Second,
+			ReadTimeout:    config.ReadTimeout,
+			WriteTimeout:   config.WriteTimeout,
 			MaxHeaderBytes: 1 << 20,
 		},
 	}

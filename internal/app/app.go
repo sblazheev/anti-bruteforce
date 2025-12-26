@@ -19,11 +19,18 @@ type App struct {
 
 func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface) (*App, error) {
 	storageLogin := bucket.NewStorageBuckets(ctx, &cfg.LimitsConfig.Login, logger)
+	storagePassword := bucket.NewStorageBuckets(ctx, &cfg.LimitsConfig.Password, logger)
+	storageIP := bucket.NewStorageBuckets(ctx, &cfg.LimitsConfig.IP, logger)
+	logger.Debug("Config login", "cfg", cfg.LimitsConfig.Login)
+	logger.Debug("Config password", "cfg", cfg.LimitsConfig.Password)
+	logger.Debug("Config IP", "cfg", cfg.LimitsConfig.IP)
 	return &App{
-		cfg:          cfg,
-		logger:       logger,
-		ctx:          ctx,
-		storageLogin: storageLogin,
+		cfg:             cfg,
+		logger:          logger,
+		ctx:             ctx,
+		storageLogin:    storageLogin,
+		storagePassword: storagePassword,
+		storageIP:       storageIP,
 	}, nil
 }
 

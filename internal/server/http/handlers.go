@@ -2,7 +2,6 @@ package internalhttp
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,6 +23,10 @@ type JSONErrorResponse struct {
 	Message *string `json:"message,omitempty"`
 	Detail  string  `json:"description,omitempty"`
 } // @name JSONError .
+
+type JSONResponse struct {
+	Ok bool `json:"ok,omitempty"`
+} // @name JSONResponse .
 
 func NewHandler(app app.App, logger common.LoggerInterface) *HTTPHandler {
 	mux := http.NewServeMux()
@@ -54,44 +57,72 @@ func (h *HTTPHandler) pingHandler(w http.ResponseWriter, _ *http.Request) {
 // @Tags         Auth
 // @Accept       json
 // @Produce      json
-// @Param        data body dto.Event true  "Создание события"
-// @Success      200  {object} dto.Event
+// @Param        data body dto.Request true  "Создание события"
+// @Success      200  {object} JSONResponse
+// @Success      429  {object} JSONResponse
 // @Failure		 400  {object} JSONErrorResponse
 // @Failure		 503  {object} JSONErrorResponse
 // @Router       /auth [post] .
 func (h *HTTPHandler) allowAuthHandler(w http.ResponseWriter, r *http.Request) {
-	var dtoEvent *dto.Event
-	if err := json.NewDecoder(r.Body).Decode(&dtoEvent); err != nil {
-		h.logger.Debug("createEventHandler-Invalid request body", "err", err)
+	defer func() {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+	}()
+	var dtoRequest *dto.Request
+	if err := json.NewDecoder(r.Body).Decode(&dtoRequest); err != nil {
+		h.logger.Debug("allowAuthHandler-Invalid request body", "err", err)
 		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid request body", err, w)
 		return
 	}
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(dtoEvent)
+	err := validate.Struct(dtoRequest)
 	if err != nil {
-		h.logger.Debug("createEventHandler-Invalid format Event", "err", err)
+		h.logger.Debug("allowAuthHandler-Invalid format Event", "err", err)
 		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid format Event", err, w)
 		return
 	}
-	allow, err := h.app.CheckAuthLogin(dtoEvent.Login)
+
+	allow, err := h.app.CheckAuthLogin(dtoRequest.Login)
 	if err != nil {
-		h.logger.Error("createEventHandler", "err", err)
+		h.logger.Error("allowAuthHandler", "err", err)
 		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
 			"Service Unavailable", common.ErrServiceUnavailable, w)
 		return
 	}
-	if allow {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusTooManyRequests)
+	if !allow {
+		Failure(w)
+		return
 	}
-	fmt.Fprintf(w, "ok=%v", allow)
+
+	allow, err = h.app.CheckAuthPassword(dtoRequest.Password)
+	if err != nil {
+		h.logger.Error("allowAuthHandler", "err", err)
+		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
+			"Service Unavailable", common.ErrServiceUnavailable, w)
+		return
+	}
+	if !allow {
+		Failure(w)
+		return
+	}
+
+	allow, err = h.app.CheckAuthIP(dtoRequest.Password)
+	if err != nil {
+		h.logger.Error("allowAuthHandler", "err", err)
+		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
+			"Service Unavailable", common.ErrServiceUnavailable, w)
+		return
+	}
+	if !allow {
+		Failure(w)
+		return
+	}
+
+	Success(w)
 }
 
 func JSONError(httpcode int, code string, messageError string, err error, w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
 	if httpcode == 503 {
 		w.Header().Set("Retry-After", "600")
 	}
@@ -103,4 +134,16 @@ func JSONError(httpcode int, code string, messageError string, err error, w http
 			Detail:  err.Error(),
 		},
 	)
+}
+
+func Failure(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusTooManyRequests)
+	w.Write([]byte("{\"ok\":false}"))
+}
+
+func Success(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("{\"ok\":true}"))
 }

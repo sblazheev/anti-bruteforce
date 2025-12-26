@@ -52,13 +52,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/Event"
+                            "$ref": "#/definitions/JSONResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/JSONError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/JSONResponse"
                         }
                     },
                     "503": {
@@ -91,15 +97,15 @@ const docTemplate = `{
             "properties": {
                 "ip": {
                     "type": "string",
-                    "example": "Description"
+                    "example": "127.0.0.1"
                 },
                 "login": {
                     "type": "string",
-                    "example": ""
+                    "example": "login"
                 },
                 "password": {
                     "type": "string",
-                    "example": "pass"
+                    "example": "password"
                 }
             }
         },
@@ -114,6 +120,14 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "JSONResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
                 }
             }
         }

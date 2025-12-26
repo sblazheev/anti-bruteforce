@@ -3,13 +3,13 @@ definitions:
   Event:
     properties:
       ip:
-        example: Description
+        example: 127.0.0.1
         type: string
       login:
-        example: ""
+        example: login
         type: string
       password:
-        example: pass
+        example: password
         type: string
     type: object
   JSONError:
@@ -20,6 +20,11 @@ definitions:
         type: string
       message:
         type: string
+    type: object
+  JSONResponse:
+    properties:
+      ok:
+        type: boolean
     type: object
 externalDocs:
   description: OpenAPI
@@ -56,11 +61,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/Event'
+            $ref: '#/definitions/JSONResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/JSONError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/JSONResponse'
         "503":
           description: Service Unavailable
           schema:

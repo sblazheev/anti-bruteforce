@@ -52,8 +52,10 @@ type StorageConfig struct {
 }
 
 type HTTPConfig struct {
-	Host string `config:"host"`
-	Port string `config:"port"`
+	Host         string        `config:"host"`
+	Port         string        `config:"port"`
+	ReadTimeout  time.Duration `config:"readTimeout"`
+	WriteTimeout time.Duration `config:"writeTimeout"`
 }
 
 type GrpcConfig struct {
@@ -87,8 +89,11 @@ func New(configPath string) (*Config, error) {
 		Logger: LogConfig{
 			Level: "info",
 		},
-		Storage:      StorageConfig{},
-		HTTP:         HTTPConfig{},
+		Storage: StorageConfig{},
+		HTTP: HTTPConfig{
+			ReadTimeout:  3 * time.Second,
+			WriteTimeout: 3 * time.Second,
+		},
 		LimitsConfig: LimitsConfig{},
 	}
 	var loader *confita.Loader

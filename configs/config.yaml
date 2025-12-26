@@ -7,11 +7,17 @@ http:
   port: 80
 limits:
   login:
-    maxPerMinute: 5
-    refillRateIsSecond: 1
+    maxPerMinute: 100
+    refillRateInSecond: 0.1
     cleanupInterval: 120s
     ttl: 120s
-broker:
-  ampq: "amqp://admin:admin@amqp:5672"
-  queue:
-    notify: "calendar_notify"
+  password:
+    maxPerMinute: 10
+    refillRateInSecond: 0.1
+    cleanupInterval: 120s
+    ttl: 12s
+  ip:
+    maxPerMinute: 1
+    refillRateInSecond: 0.1
+    cleanupInterval: 120s
+    ttl: 12s

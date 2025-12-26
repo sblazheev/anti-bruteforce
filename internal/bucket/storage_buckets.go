@@ -51,6 +51,7 @@ func (s *StorageBuckets) Allow(_ context.Context, key string) (bool, error) {
 		bucket = NewTokenBucket(s.capacity, s.refillRate)
 		s.buckets[key] = bucket
 	}
+	s.logger.Debug("Capacity", "key", key, "val", bucket.tokens)
 	s.mu.Unlock()
 
 	return bucket.Request(1), nil
