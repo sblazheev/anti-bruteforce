@@ -53,7 +53,11 @@ func TestSqlStorage(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, ipSubnet1.Subnet, new.Subnet)
 	})
-
+	t.Run("In subnet", func(t *testing.T) {
+		inSubNet, err := s.InSubNet("white_list", "127.0.0.1")
+		require.NoError(t, err)
+		require.Equal(t, true, inSubNet)
+	})
 	t.Run("Delete subnet", func(t *testing.T) {
 		err := s.Delete("white_list", ipSubnet1.Subnet)
 		require.NoError(t, err)
@@ -62,6 +66,6 @@ func TestSqlStorage(t *testing.T) {
 	})
 
 	t.Cleanup(func() {
-		s.Clear("white_list")
+		//s.Clear("white_list")
 	})
 }

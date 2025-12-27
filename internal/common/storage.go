@@ -7,7 +7,6 @@ import (
 )
 
 type IPSubnet struct {
-	ID         int64     `db:"id"`
 	Subnet     string    `db:"sub_net"`
 	DateCreate time.Time `db:"date_create"`
 }
@@ -28,6 +27,8 @@ type StorageDriverInterface interface {
 	Clear(jar string) error
 	PrepareStorage(log LoggerInterface) error
 	IsOverlapping(jar string, ipSubnet *IPSubnet) (bool, error)
+	InSubNet(jar string, ip string) (bool, error)
+	Load(jar string) (bool, error)
 }
 
 type Storage struct {
@@ -38,6 +39,7 @@ type Storage struct {
 
 func NewStorage(jar string, ctx *context.Context, s StorageDriverInterface) (*Storage, error) {
 	return &Storage{
+		jar: jar,
 		s:   s,
 		ctx: ctx,
 	}, nil
@@ -69,4 +71,12 @@ func (s *Storage) Clear() error {
 
 func (s *Storage) IsOverlapping(ipSubnet *IPSubnet) (bool, error) {
 	return s.s.IsOverlapping(s.jar, ipSubnet)
+}
+
+func (s *Storage) InSubNet(ip string) (bool, error) {
+	return s.s.InSubNet(s.jar, ip)
+}
+
+func (s *Storage) Load() (bool, error) {
+	return s.s.Load(s.jar)
 }

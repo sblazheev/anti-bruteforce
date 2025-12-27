@@ -131,7 +131,7 @@ func (s *Storage) PrepareStorage(log common.LoggerInterface) error {
 
 func (s *Storage) IsOverlapping(jar string, subnet *common.IPSubnet) (bool, error) {
 	count := 0
-	sql := `SELECT count(*) from %s wl where $1::cidr && wl.sub_net`
+	sql := `SELECT count(*) from %s jar where $1::cidr && jar.sub_net`
 	sql = fmt.Sprintf(sql, jar)
 	err := s.db.GetContext(*s.ctx, &count, sql, subnet.Subnet)
 	if err != nil {
@@ -141,4 +141,22 @@ func (s *Storage) IsOverlapping(jar string, subnet *common.IPSubnet) (bool, erro
 		return true, nil
 	}
 	return false, nil
+}
+
+func (s *Storage) InSubNet(jar string, ip string) (bool, error) {
+	count := 0
+	sql := `SELECT count(*) FROM %s WHERE $1::inet << "sub_net"::cidr`
+	sql = fmt.Sprintf(sql, jar)
+	err := s.db.GetContext(*s.ctx, &count, sql, ip)
+	if err != nil {
+		return false, err
+	}
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (s *Storage) Load(_ string) (bool, error) {
+	return true, nil
 }

@@ -3,11 +3,12 @@ package app
 import (
 	"context"
 
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/bucket"                       //nolint:depguard
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common"                       //nolint:depguard
-	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config"                       //nolint:depguard
-	memorystorage "gitlab.wsrubi.ru/go/anti-bruteforce/internal/storage/memory" //nolint:depguard
-	sqlstorage "gitlab.wsrubi.ru/go/anti-bruteforce/internal/storage/sql"       //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/bucket"                           //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/common"                           //nolint:depguard
+	"gitlab.wsrubi.ru/go/anti-bruteforce/internal/config"                           //nolint:depguard
+	memorystorage "gitlab.wsrubi.ru/go/anti-bruteforce/internal/storage/memory"     //nolint:depguard
+	sqlstorage "gitlab.wsrubi.ru/go/anti-bruteforce/internal/storage/sql"           //nolint:depguard
+	sqlproxystorage "gitlab.wsrubi.ru/go/anti-bruteforce/internal/storage/sqlproxy" //nolint:depguard
 )
 
 type App struct {
@@ -25,6 +26,8 @@ func NewStorageDriver(ctx *context.Context, c config.StorageConfig) (common.Stor
 	switch c.Type {
 	case "memory":
 		return memorystorage.New(), nil
+	case "sqlproxy":
+		return sqlproxystorage.New(ctx, c), nil
 	case "sql":
 		return sqlstorage.New(ctx, c), nil
 	}
@@ -41,9 +44,15 @@ func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface
 	if err != nil {
 		return nil, err
 	}
+	if _, err := storageWhiteList.Load(); err != nil {
+		return nil, err
+	}
 
 	storageBlackList, err := common.NewStorage("black_list", ctx, storageDriver)
 	if err != nil {
+		return nil, err
+	}
+	if _, err := storageBlackList.Load(); err != nil {
 		return nil, err
 	}
 
@@ -70,10 +79,17 @@ func (app *App) CheckAuthLogin(login string) (bool, error) {
 }
 
 func (app *App) CheckAuthIP(ip string) (bool, error) {
-
 	return app.storageIP.Allow(*app.ctx, ip)
 }
 
 func (app *App) CheckAuthPassword(password string) (bool, error) {
 	return app.storagePassword.Allow(*app.ctx, password)
+}
+
+func (app *App) CheckWhiteList(ip string) (bool, error) {
+	return app.storageWhiteList.InSubNet(ip)
+}
+
+func (app *App) CheckBlackList(ip string) (bool, error) {
+	return app.storageBlackList.InSubNet(ip)
 }

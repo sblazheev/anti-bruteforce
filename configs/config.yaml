@@ -1,7 +1,7 @@
 app:
 
 storage:
-  type: sql
+  type: sqlproxy # sql / memory / sqlproxy
   dsn: "postgres://postgres:postgres@postgres:5432/anti_bruteforce"
 logger:
   level : debug # info / debug / warning / error

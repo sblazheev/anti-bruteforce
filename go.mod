@@ -5,7 +5,6 @@ go 1.24.0
 require (
 	github.com/brianvoe/gofakeit/v7 v7.12.1
 	github.com/go-playground/validator/v10 v10.30.0
-	github.com/google/uuid v1.6.0
 	github.com/heetch/confita v0.11.0
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jmoiron/sqlx v1.4.0
@@ -14,10 +13,11 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.6
+	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
 )
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

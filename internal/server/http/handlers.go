@@ -83,7 +83,31 @@ func (h *HTTPHandler) allowAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allow, err := h.app.CheckAuthLogin(dtoRequest.Login)
+	allow, err := h.app.CheckWhiteList(dtoRequest.IP)
+	if err != nil {
+		h.logger.Error("allowAuthHandler", "err", err)
+		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
+			"Service Unavailable", common.ErrServiceUnavailable, w)
+		return
+	}
+	if allow {
+		Success(w)
+		return
+	}
+
+	allow, err = h.app.CheckBlackList(dtoRequest.IP)
+	if err != nil {
+		h.logger.Error("allowAuthHandler", "err", err)
+		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
+			"Service Unavailable", common.ErrServiceUnavailable, w)
+		return
+	}
+	if allow {
+		Failure(w)
+		return
+	}
+
+	allow, err = h.app.CheckAuthLogin(dtoRequest.Login)
 	if err != nil {
 		h.logger.Error("allowAuthHandler", "err", err)
 		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
