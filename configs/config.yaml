@@ -1,5 +1,8 @@
 app:
 
+storage:
+  type: sql
+  dsn: "postgres://postgres:postgres@postgres:5432/anti_bruteforce"
 logger:
   level : debug # info / debug / warning / error
 http:

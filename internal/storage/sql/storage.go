@@ -2,9 +2,9 @@ package sqlstorage
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 
-	"github.com/google/uuid"                                              //nolint:depguard
 	_ "github.com/jackc/pgx/stdlib"                                       //nolint:depguard
 	"github.com/jmoiron/sqlx"                                             //nolint:depguard
 	"github.com/pressly/goose/v3"                                         //nolint:depguard
@@ -41,20 +41,18 @@ func (s *Storage) Close() error {
 	return s.err
 }
 
-func (s *Storage) Add(ipSubnet common.IPSubnet) (common.IPSubnet, error) {
-	if ipSubnet.ID.(string) == "" {
-		ipSubnet.ID = uuid.New().String()
-	}
-	sql := `INSERT INTO IPSubnets("id","title","date_time","duration","description","user","notify_time") 
-VALUES(:id, :title, :date_time, :duration, :description, :user, :notify_time)`
+func (s *Storage) Add(jar string, ipSubnet common.IPSubnet) (*common.IPSubnet, error) {
+	sql := `INSERT INTO %s("sub_net","date_create") 
+VALUES(:sub_net, :date_create)`
+	sql = fmt.Sprintf(sql, jar)
 	_, err := s.db.NamedExecContext(*s.ctx, sql, ipSubnet)
 	if err != nil {
-		return ipSubnet, err
+		return &ipSubnet, err
 	}
-	return ipSubnet, err
+	return &ipSubnet, err
 }
 
-func (s *Storage) Update(ipSubnet common.IPSubnet) error {
+func (s *Storage) Update(jar string, ipSubnet common.IPSubnet) error {
 	sql := `UPDATE IPSubnets SET "title" = :title,"date_time" = :date_time,"duration" = :duration,
                   "description" = :description,"user" = :user,
                   "notify_time" = :notify_time WHERE id = :id`
@@ -65,30 +63,40 @@ func (s *Storage) Update(ipSubnet common.IPSubnet) error {
 	return err
 }
 
-func (s *Storage) Delete(id interface{}) error {
-	sql := `DELETE FROM IPSubnets WHERE id = $1`
-	_, err := s.db.ExecContext(*s.ctx, sql, id)
+func (s *Storage) Delete(jar string, subnet string) error {
+	sql := `DELETE FROM %s WHERE sub_net = $1`
+	sql = fmt.Sprintf(sql, jar)
+	_, err := s.db.ExecContext(*s.ctx, sql, subnet)
 	return err
 }
 
-func (s *Storage) GetByID(id interface{}) (common.IPSubnet, error) {
+func (s *Storage) Get(jar string, subnet string) (*common.IPSubnet, error) {
 	IPSubnet := common.IPSubnet{}
-	sql := `SELECT "id","title","date_time","duration","description","user","notify_time" FROM IPSubnets WHERE id = $1`
-	err := s.db.GetContext(*s.ctx, &IPSubnet, sql, id)
+	sql := `SELECT "sub_net","date_create" FROM %s WHERE sub_net = $1`
+	sql = fmt.Sprintf(sql, jar)
+	err := s.db.GetContext(*s.ctx, &IPSubnet, sql, subnet)
 	if err != nil && err.Error() == "sql: no rows in result set" {
-		return IPSubnet, common.ErrIPSubnetNotFound
+		return &IPSubnet, common.ErrIPSubnetNotFound
 	}
-	return IPSubnet, err
+	return &IPSubnet, err
 }
 
-func (s *Storage) List() ([]*common.IPSubnet, error) {
+func (s *Storage) List(jar string) ([]*common.IPSubnet, error) {
 	IPSubnet := make([]*common.IPSubnet, 0)
-	sql := `SELECT "id","title","date_time","duration","description","user","notify_time" FROM IPSubnets`
+	sql := `SELECT "sub_net","date_create" FROM %s`
+	sql = fmt.Sprintf(sql, jar)
 	err := s.db.SelectContext(*s.ctx, &IPSubnet, sql)
 	if err != nil && err.Error() == "sql: no rows in result set" {
 		return IPSubnet, common.ErrIPSubnetNotFound
 	}
 	return IPSubnet, err
+}
+
+func (s *Storage) Clear(jar string) error {
+	sql := `TRUNCATE TABLE %s`
+	sql = fmt.Sprintf(sql, jar)
+	_, err := s.db.ExecContext(*s.ctx, sql)
+	return err
 }
 
 func (s *Storage) PrepareStorage(log common.LoggerInterface) error {

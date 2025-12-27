@@ -1,4 +1,4 @@
-BUILD := "./build/anti_bruteforce"
+BUILD := build/anti_bruteforce
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
@@ -36,7 +36,7 @@ lint: install-lint-deps
 	golangci-lint run ./...
 
 migrate: build
-	$(BIN) migrate --config "./config.yaml"
+	$(BUILD) migrate --config "./configs/config.yaml"
 
 install-swag-deps:
 	(which swag > /dev/null) || go install github.com/swaggo/swag/cmd/swag@latest
