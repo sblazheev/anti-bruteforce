@@ -27,7 +27,7 @@ type StorageDriverInterface interface {
 	List(jar string) ([]*IPSubnet, error)
 	Clear(jar string) error
 	PrepareStorage(log LoggerInterface) error
-	IsOverlapping(ipSubnet *IPSubnet) (bool, error)
+	IsOverlapping(jar string, ipSubnet *IPSubnet) (bool, error)
 }
 
 type Storage struct {
@@ -68,5 +68,5 @@ func (s *Storage) Clear() error {
 }
 
 func (s *Storage) IsOverlapping(ipSubnet *IPSubnet) (bool, error) {
-	return s.s.IsOverlapping(ipSubnet)
+	return s.s.IsOverlapping(s.jar, ipSubnet)
 }

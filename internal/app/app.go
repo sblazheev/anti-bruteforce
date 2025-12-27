@@ -11,13 +11,14 @@ import (
 )
 
 type App struct {
-	logger          common.LoggerInterface
-	cfg             *config.Config
-	ctx             *context.Context
-	storage         *common.Storage
-	storageIP       *bucket.StorageBuckets
-	storageLogin    *bucket.StorageBuckets
-	storagePassword *bucket.StorageBuckets
+	logger           common.LoggerInterface
+	cfg              *config.Config
+	ctx              *context.Context
+	storageWhiteList *common.Storage
+	storageBlackList *common.Storage
+	storageIP        *bucket.StorageBuckets
+	storageLogin     *bucket.StorageBuckets
+	storagePassword  *bucket.StorageBuckets
 }
 
 func NewStorageDriver(ctx *context.Context, c config.StorageConfig) (common.StorageDriverInterface, error) {
@@ -36,7 +37,12 @@ func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface
 		return nil, err
 	}
 
-	str, err := common.NewStorage(ctx, storageDriver)
+	storageWhiteList, err := common.NewStorage("white_list", ctx, storageDriver)
+	if err != nil {
+		return nil, err
+	}
+
+	storageBlackList, err := common.NewStorage("black_list", ctx, storageDriver)
 	if err != nil {
 		return nil, err
 	}
@@ -48,13 +54,14 @@ func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface
 	logger.Debug("Config password", "cfg", cfg.LimitsConfig.Password)
 	logger.Debug("Config IP", "cfg", cfg.LimitsConfig.IP)
 	return &App{
-		cfg:             cfg,
-		logger:          logger,
-		ctx:             ctx,
-		storageLogin:    storageLogin,
-		storagePassword: storagePassword,
-		storageIP:       storageIP,
-		storage:         str,
+		cfg:              cfg,
+		logger:           logger,
+		ctx:              ctx,
+		storageLogin:     storageLogin,
+		storagePassword:  storagePassword,
+		storageIP:        storageIP,
+		storageWhiteList: storageWhiteList,
+		storageBlackList: storageBlackList,
 	}, nil
 }
 
@@ -63,6 +70,7 @@ func (app *App) CheckAuthLogin(login string) (bool, error) {
 }
 
 func (app *App) CheckAuthIP(ip string) (bool, error) {
+
 	return app.storageIP.Allow(*app.ctx, ip)
 }
 

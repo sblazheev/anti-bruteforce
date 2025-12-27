@@ -87,9 +87,6 @@ func (s *Storage) PrepareStorage(_ common.LoggerInterface) error {
 	return nil
 }
 
-func (s *Storage) IsOverlapping(_ *common.IPSubnet) (bool, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
+func (s *Storage) IsOverlapping(_ string, _ *common.IPSubnet) (bool, error) {
 	return false, nil
 }

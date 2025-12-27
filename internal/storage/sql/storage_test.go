@@ -16,7 +16,7 @@ func TestSqlStorage(t *testing.T) {
 	ipSubnet1 := common.NewIPSubnet("127.0.0.0/24", time.Now())
 	ipSubnet2 := common.NewIPSubnet("127.0.0.0/16", ipSubnet1.DateCreate.Add(time.Second*-1))
 	ipSubnet3 := common.NewIPSubnet("127.0.0.0/8", ipSubnet1.DateCreate.Add(time.Second*10))
-	ipSubnet4 := common.NewIPSubnet("127.0.0.0/25", ipSubnet1.DateCreate.Add(time.Second*5))
+	ipSubnet4 := common.NewIPSubnet("127.0.0.128/25", ipSubnet1.DateCreate.Add(time.Second*5))
 
 	c, err := config.New("./test/config.yaml")
 	require.NoError(t, err)
@@ -35,10 +35,12 @@ func TestSqlStorage(t *testing.T) {
 		new, err = s.Add("white_list", *ipSubnet3)
 		require.NoError(t, err)
 		require.Equal(t, ipSubnet3, new)
+	})
 
-		new, err = s.Add("white_list", *ipSubnet4)
+	t.Run("Add IsOverlapping", func(t *testing.T) {
+		IsOverlapping, err := s.IsOverlapping("white_list", ipSubnet4)
 		require.NoError(t, err)
-		require.Equal(t, ipSubnet4, new)
+		require.Equal(t, true, IsOverlapping)
 	})
 
 	t.Run("Get list subnet", func(t *testing.T) {

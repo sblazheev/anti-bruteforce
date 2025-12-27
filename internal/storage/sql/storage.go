@@ -53,9 +53,8 @@ VALUES(:sub_net, :date_create)`
 }
 
 func (s *Storage) Update(jar string, ipSubnet common.IPSubnet) error {
-	sql := `UPDATE IPSubnets SET "title" = :title,"date_time" = :date_time,"duration" = :duration,
-                  "description" = :description,"user" = :user,
-                  "notify_time" = :notify_time WHERE id = :id`
+	sql := `UPDATE %s SET "sub_net" = :sub_net,"date_create" = :date_create WHERE sub_net = :sub_net`
+	sql = fmt.Sprintf(sql, jar)
 	_, err := s.db.NamedExecContext(*s.ctx, sql, ipSubnet)
 	if err != nil {
 		return err
@@ -130,11 +129,13 @@ func (s *Storage) PrepareStorage(log common.LoggerInterface) error {
 	return nil
 }
 
-func (s *Storage) IsOverlapping(_ *common.IPSubnet) (bool, error) {
+func (s *Storage) IsOverlapping(jar string, subnet *common.IPSubnet) (bool, error) {
 	count := 0
-	var err error
+	sql := `SELECT count(*) from %s wl where $1::cidr && wl.sub_net`
+	sql = fmt.Sprintf(sql, jar)
+	err := s.db.GetContext(*s.ctx, &count, sql, subnet.Subnet)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	if count > 0 {
 		return true, nil
