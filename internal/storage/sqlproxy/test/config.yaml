@@ -1,0 +1,10 @@
+app:
+  date_overlapping: true
+logger:
+  level : info
+storage:
+  type: sqlproxy
+  dsn: "postgres://postgres:postgres@postgres:5432/anti_bruteforce"
+server:
+  host: 0.0.0.0
+  port: 80

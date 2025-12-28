@@ -1,0 +1,88 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:17
+    container_name: calendar_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: calendar
+    ports:
+      - "5432:5432"
+    volumes:
+      - sqldata:/var/lib/postgresql/data
+  migrate:
+    image: calendar:develop
+    container_name: calendar_migrate
+    build:
+      context: ../
+      dockerfile: ./build/DockerfileCalendar
+    entrypoint: ["/opt/calendar/calendar"]
+    command: ["migrate"]
+    depends_on:
+      - db
+    environment:
+      TYPE: sql
+      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
+  calendar:
+    image: calendar:develop
+    container_name: calendar_app
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./build/DockerfileCalendar
+    entrypoint: ["/opt/calendar/calendar"]
+    command: ["serve", "--config", "/etc/calendar/config.yaml"]
+    depends_on:
+      - db
+      - migrate
+    environment:
+      OVERLAPPING: true
+      TYPE: sql
+      HOST: "0.0.0.0"
+      PORT: 80
+      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
+    ports:
+      - "80:80"
+    volumes:
+      - ../configs/config.yaml:/etc/calendar/config.yaml
+  scheduler:
+    image: scheduler:develop
+    container_name: scheduler_app
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./build/DockerfileScheduler
+    entrypoint: [ "/opt/calendar/calendar_scheduler" ]
+    command: [ "scheduler"]
+    depends_on:
+      - db
+      - mq
+    environment:
+      TYPE: sql
+      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
+      AMPQ: "amqp://guest:guest@mq:5672"
+      NOTIFY: calendar_notify
+      INTERVAL: 10
+  sender:
+    image: sender:develop
+    container_name: sender_app
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./build/DockerfileSender
+    entrypoint: [ "/opt/calendar/calendar_sender" ]
+    command: [ "sender"]
+    depends_on:
+      - db
+      - mq
+    environment:
+      TYPE: sql
+      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
+      AMPQ: "amqp://guest:guest@mq:5672"
+      NOTIFY: calendar_notify
+      INTERVAL: 10
+volumes:
+  sqldata:

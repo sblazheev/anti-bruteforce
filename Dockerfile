@@ -18,16 +18,16 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest && \
 
 RUN CGO_ENABLED=0 go build -v \
         -ldflags "$LDFLAGS" \
-        -o ${BIN_FILE} cmd/calendar/*.go
+        -o ${BIN_FILE} .
 
 
 FROM alpine:latest
 
-ENV BIN_FILE /opt/calendar/calendar
+ENV BIN_FILE /opt/app/anti_bruteforce
 
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
-ENV CONFIG_FILE /etc/calendar/config.yaml
+ENV CONFIG_FILE /etc/anti_bruteforce/config.yaml
 COPY ./configs/config.yaml ${CONFIG_FILE}
 
 CMD ${BIN_FILE} -config ${CONFIG_FILE}
