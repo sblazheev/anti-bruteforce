@@ -3,10 +3,12 @@ BUILD := build/anti_bruteforce
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
 
-fmt:
-	golangci-lint run --fix
+.DEFAULT_GOAL: build
 
 build: swag build-app
+
+fmt:
+	golangci-lint run --fix
 
 build-app:
 	go build -v -o $(BUILD) -ldflags "$(LDFLAGS)" .

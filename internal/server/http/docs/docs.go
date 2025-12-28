@@ -24,7 +24,93 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth": {
+        "/add/black-list": {
+            "post": {
+                "description": "Добавить сеть в черный список",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Add"
+                ],
+                "summary": "Добавить сеть в черный список",
+                "parameters": [
+                    {
+                        "description": "Добавить сеть в черный список",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RequestIP"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    }
+                }
+            }
+        },
+        "/add/white-list": {
+            "post": {
+                "description": "Добавить сеть в белый список",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Add"
+                ],
+                "summary": "Добавить сеть в белый список",
+                "parameters": [
+                    {
+                        "description": "Добавить сеть в белый список",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RequestIP"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    }
+                }
+            }
+        },
+        "/check/auth": {
             "post": {
                 "description": "Попытка авторизации",
                 "consumes": [
@@ -34,7 +120,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Check"
                 ],
                 "summary": "Попытка авторизации",
                 "parameters": [
@@ -44,7 +130,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/Event"
+                            "$ref": "#/definitions/RequestCheck"
                         }
                     }
                 ],
@@ -76,6 +162,135 @@ const docTemplate = `{
                 }
             }
         },
+        "/delete/black-list": {
+            "post": {
+                "description": "Удалить сеть из черного списка",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Delete"
+                ],
+                "summary": "Удалить сеть из черного списка",
+                "parameters": [
+                    {
+                        "description": "Удалить сеть из черного списка",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RequestIP"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    }
+                }
+            }
+        },
+        "/delete/bucket": {
+            "post": {
+                "description": "Удалить бакет",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Delete"
+                ],
+                "summary": "Удалить бакет",
+                "parameters": [
+                    {
+                        "description": "Удалить бакет",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RequestDeleteBucket"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    }
+                }
+            }
+        },
+        "/delete/white-list": {
+            "post": {
+                "description": "Удалить сеть из белого списка",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Delete"
+                ],
+                "summary": "Удалить сеть из белого списка",
+                "parameters": [
+                    {
+                        "description": "Удалить сеть из белого списка",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RequestIP"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/JSONError"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Пинг-Понг",
@@ -92,23 +307,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "Event": {
-            "type": "object",
-            "properties": {
-                "ip": {
-                    "type": "string",
-                    "example": "127.0.0.1"
-                },
-                "login": {
-                    "type": "string",
-                    "example": "login"
-                },
-                "password": {
-                    "type": "string",
-                    "example": "password"
-                }
-            }
-        },
         "JSONError": {
             "type": "object",
             "properties": {
@@ -128,6 +326,45 @@ const docTemplate = `{
             "properties": {
                 "ok": {
                     "type": "boolean"
+                }
+            }
+        },
+        "RequestCheck": {
+            "type": "object",
+            "properties": {
+                "ip": {
+                    "type": "string",
+                    "example": "127.0.0.1"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "login"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password"
+                }
+            }
+        },
+        "RequestDeleteBucket": {
+            "type": "object",
+            "properties": {
+                "ip": {
+                    "type": "string",
+                    "example": "127.0.0.1"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "login"
+                }
+            }
+        },
+        "RequestIP": {
+            "type": "object",
+            "properties": {
+                "net": {
+                    "type": "string",
+                    "example": "127.0.0.0/24"
                 }
             }
         }

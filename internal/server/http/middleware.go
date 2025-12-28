@@ -24,6 +24,7 @@ func loggingMiddleware(next http.Handler, logger common.LoggerInterface) http.Ha
 				Proto     string
 				Method    string
 				UserAgent string
+				Rule      string
 				Status    int
 				Latency   int
 			}{
@@ -33,6 +34,7 @@ func loggingMiddleware(next http.Handler, logger common.LoggerInterface) http.Ha
 				Proto:     r.Proto,
 				Method:    r.Method,
 				UserAgent: r.UserAgent(),
+				Rule:      w.Header().Get("x-rule"),
 				Status:    rw.statusCode,
 				Latency:   int(l.Milliseconds()),
 			})

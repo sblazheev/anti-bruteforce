@@ -48,6 +48,7 @@ func TestStorageBuckets(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		storageBuckets := NewStorageBuckets(
 			&ctx,
+			"test",
 			&config.LimitConfig{MaxPerMinute: 1, RefillRateIsSecond: 0.0000001, CleanupInterval: CleanupInterval, TTL: TTL},
 			log,
 		)
@@ -82,6 +83,7 @@ func TestStorageBuckets(t *testing.T) {
 		ctx, cancel := context.WithCancel(ctx)
 		storageBuckets := NewStorageBuckets(
 			&ctx,
+			"test",
 			&config.LimitConfig{MaxPerMinute: 1, RefillRateIsSecond: 1, CleanupInterval: CleanupInterval, TTL: TTL},
 			log,
 		)

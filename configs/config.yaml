@@ -10,17 +10,17 @@ http:
   port: 80
 limits:
   login:
-    maxPerMinute: 100
+    maxPerMinute: 10
     refillRateInSecond: 0.1
     cleanupInterval: 120s
     ttl: 120s
   password:
-    maxPerMinute: 10
+    maxPerMinute: 100
     refillRateInSecond: 0.1
     cleanupInterval: 120s
-    ttl: 12s
+    ttl: 120s
   ip:
-    maxPerMinute: 1
+    maxPerMinute: 1000
     refillRateInSecond: 0.1
     cleanupInterval: 120s
-    ttl: 12s
+    ttl: 120s

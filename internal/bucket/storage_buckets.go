@@ -10,6 +10,7 @@ import (
 )
 
 type StorageBuckets struct {
+	code            string
 	logger          common.LoggerInterface
 	buckets         map[string]*TokenBucket
 	capacity        float32
@@ -20,14 +21,23 @@ type StorageBuckets struct {
 	ctx             context.Context
 }
 
-func NewStorageBuckets(ctx *context.Context, cfg *config.LimitConfig, logger common.LoggerInterface) *StorageBuckets {
+func NewStorageBuckets(ctx *context.Context, code string, cfg *config.LimitConfig,
+	logger common.LoggerInterface,
+) *StorageBuckets {
+	var CleanupInterval time.Duration
+	if cfg.CleanupInterval > 0 {
+		CleanupInterval = cfg.CleanupInterval
+	} else {
+		CleanupInterval = time.Second * 600
+	}
 	storage := &StorageBuckets{
+		code:            code,
 		logger:          logger,
 		buckets:         make(map[string]*TokenBucket),
 		capacity:        cfg.MaxPerMinute,
 		refillRate:      cfg.RefillRateIsSecond,
 		ttl:             cfg.TTL,
-		cleanupInterval: cfg.CleanupInterval,
+		cleanupInterval: CleanupInterval,
 		mu:              sync.RWMutex{},
 		ctx:             *ctx,
 	}
@@ -64,17 +74,17 @@ func (s *StorageBuckets) cleanup() {
 	for {
 		select {
 		case <-ticker.C:
-			s.logger.Info("Start cleanup buckets")
-			s.remove()
-			s.logger.Info("Finish cleanup buckets")
+			s.logger.Info("Start cleanup buckets - " + s.code)
+			s.clearByTTL()
+			s.logger.Info("Finish cleanup buckets - " + s.code)
 		case <-s.ctx.Done():
-			s.logger.Info("Stopping cleanup buckets")
+			s.logger.Info("Stopping cleanup buckets - " + s.code)
 			return
 		}
 	}
 }
 
-func (s *StorageBuckets) remove() {
+func (s *StorageBuckets) clearByTTL() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := time.Now()
@@ -83,7 +93,13 @@ func (s *StorageBuckets) remove() {
 			delete(s.buckets, key)
 		}
 	}
-	s.logger.Info("Сleanup buckets by TTL", "time", time.Since(now).Seconds(), "buckets", len(s.buckets))
+	s.logger.Info("Сleanup buckets by TTL", "time", time.Since(now).Seconds(), "buckets - "+s.code, len(s.buckets))
+}
+
+func (s *StorageBuckets) RemoveBucket(key string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.buckets, key)
 }
 
 func (s *StorageBuckets) reset() {

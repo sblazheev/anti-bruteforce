@@ -1,13 +1,13 @@
 package dto
 
-type Request struct {
+type RequestCheck struct {
 	Login    string `json:"login" example:"login"`
 	Password string `json:"password" example:"password"`
 	IP       string `json:"ip" example:"127.0.0.1"`
-} // @name Event .
+} // @name RequestCheck .
 
-func New(login string, password string, ip string) (*Request, error) {
-	return &Request{
+func NewCheck(login string, password string, ip string) (*RequestCheck, error) {
+	return &RequestCheck{
 		Login:    login,
 		Password: password,
 		IP:       ip,

@@ -72,16 +72,6 @@ type QueueConfig struct {
 	Notify string `config:"notify"`
 }
 
-type SchedulerConfig struct {
-	Interval int `config:"interval"`
-	KeepDays int `config:"keepdays"`
-	Chunk    int `config:"chunk"`
-}
-
-type SenderConfig struct {
-	Interval int `config:"interval"`
-}
-
 func New(configPath string) (*Config, error) {
 	loggerLeverPosible := []string{"info", "warn", "debug", "error", ""}
 	cfg := Config{

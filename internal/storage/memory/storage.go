@@ -61,9 +61,9 @@ func (s *Storage) Delete(_ string, subnet string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, exists := s.IPSubnets[subnet]; !exists {
+	/*if _, exists := s.IPSubnets[subnet]; !exists {
 		return common.ErrIPSubnetNotFound
-	}
+	}*/
 
 	delete(s.IPSubnets, subnet)
 	return nil

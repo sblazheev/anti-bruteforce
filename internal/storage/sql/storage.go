@@ -42,8 +42,7 @@ func (s *Storage) Close() error {
 }
 
 func (s *Storage) Add(jar string, ipSubnet common.IPSubnet) (*common.IPSubnet, error) {
-	sql := `INSERT INTO %s("sub_net","date_create") 
-VALUES(:sub_net, :date_create)`
+	sql := `INSERT INTO %s("sub_net") VALUES(:sub_net)`
 	sql = fmt.Sprintf(sql, jar)
 	_, err := s.db.NamedExecContext(*s.ctx, sql, ipSubnet)
 	if err != nil {

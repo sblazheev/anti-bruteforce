@@ -2,6 +2,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require" //nolint:depguard
 )
@@ -13,6 +14,10 @@ func TestConfig(t *testing.T) {
 			App: AppConfig{},
 			Logger: LogConfig{
 				Level: "info",
+			},
+			HTTP: HTTPConfig{
+				ReadTimeout:  3 * time.Second,
+				WriteTimeout: 3 * time.Second,
 			},
 		}, config)
 		require.NoError(t, err)

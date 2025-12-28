@@ -24,23 +24,29 @@ type App struct {
 
 func NewStorageDriver(ctx *context.Context, c config.StorageConfig) (common.StorageDriverInterface, error) {
 	switch c.Type {
-	case "memory":
-		return memorystorage.New(), nil
 	case "sqlproxy":
 		return sqlproxystorage.New(ctx, c), nil
 	case "sql":
 		return sqlstorage.New(ctx, c), nil
+	case "memory":
+		return memorystorage.New(), nil
+	default:
+		return memorystorage.New(), nil
 	}
-	return nil, common.ErrStorageUnknownType
 }
 
 func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface) (*App, error) {
-	storageDriver, err := NewStorageDriver(ctx, cfg.Storage)
+	storageDriverWhite, err := NewStorageDriver(ctx, cfg.Storage)
 	if err != nil {
 		return nil, err
 	}
 
-	storageWhiteList, err := common.NewStorage("white_list", ctx, storageDriver)
+	storageDriverBlack, err := NewStorageDriver(ctx, cfg.Storage)
+	if err != nil {
+		return nil, err
+	}
+
+	storageWhiteList, err := common.NewStorage("white_list", ctx, storageDriverWhite)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +54,7 @@ func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface
 		return nil, err
 	}
 
-	storageBlackList, err := common.NewStorage("black_list", ctx, storageDriver)
+	storageBlackList, err := common.NewStorage("black_list", ctx, storageDriverBlack)
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +62,9 @@ func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface
 		return nil, err
 	}
 
-	storageLogin := bucket.NewStorageBuckets(ctx, &cfg.LimitsConfig.Login, logger)
-	storagePassword := bucket.NewStorageBuckets(ctx, &cfg.LimitsConfig.Password, logger)
-	storageIP := bucket.NewStorageBuckets(ctx, &cfg.LimitsConfig.IP, logger)
+	storageLogin := bucket.NewStorageBuckets(ctx, "Login", &cfg.LimitsConfig.Login, logger)
+	storagePassword := bucket.NewStorageBuckets(ctx, "Password", &cfg.LimitsConfig.Password, logger)
+	storageIP := bucket.NewStorageBuckets(ctx, "IP", &cfg.LimitsConfig.IP, logger)
 	logger.Debug("Config login", "cfg", cfg.LimitsConfig.Login)
 	logger.Debug("Config password", "cfg", cfg.LimitsConfig.Password)
 	logger.Debug("Config IP", "cfg", cfg.LimitsConfig.IP)
@@ -92,4 +98,34 @@ func (app *App) CheckWhiteList(ip string) (bool, error) {
 
 func (app *App) CheckBlackList(ip string) (bool, error) {
 	return app.storageBlackList.InSubNet(ip)
+}
+
+func (app *App) DeleteIPBucket(ip string) bool {
+	app.storageIP.RemoveBucket(ip)
+	return true
+}
+
+func (app *App) DeleteLoginBucket(ip string) bool {
+	app.storageLogin.RemoveBucket(ip)
+	return true
+}
+
+func (app *App) AddBlackList(net string) (*common.IPSubnet, error) {
+	return app.storageBlackList.Add(common.IPSubnet{
+		Subnet: net,
+	})
+}
+
+func (app *App) AddWhiteList(net string) (*common.IPSubnet, error) {
+	return app.storageWhiteList.Add(common.IPSubnet{
+		Subnet: net,
+	})
+}
+
+func (app *App) DeleteBlackList(net string) error {
+	return app.storageBlackList.Delete(net)
+}
+
+func (app *App) DeleteWhiteList(net string) error {
+	return app.storageWhiteList.Delete(net)
 }

@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/brianvoe/gofakeit/v7 v7.12.1
+	github.com/go-faster/errors v0.7.1
 	github.com/go-playground/validator/v10 v10.30.0
 	github.com/heetch/confita v0.11.0
 	github.com/jackc/pgx v3.6.2+incompatible
@@ -33,6 +34,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
@@ -48,6 +50,7 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

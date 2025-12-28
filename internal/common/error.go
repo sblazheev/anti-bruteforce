@@ -9,4 +9,6 @@ var (
 	ErrIPSubnetAlreadyExists = fmt.Errorf("subnet exist")
 	ErrIPSubnetNotFound      = fmt.Errorf("subnet not found")
 	ErrStorageUnknownType    = fmt.Errorf("storage unknown type")
+	ErrFormatIp              = fmt.Errorf("error format ip4")
+	ErrDuplicateValue        = fmt.Errorf("duplicate value")
 )

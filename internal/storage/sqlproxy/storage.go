@@ -25,18 +25,35 @@ func New(ctx *context.Context, c config.StorageConfig) common.StorageDriverInter
 }
 
 func (s *Storage) Add(jar string, ipSubnet common.IPSubnet) (*common.IPSubnet, error) {
-	return s.memory.Add(jar, ipSubnet)
+	newIPSubnet, err := s.sqlstorage.Add(jar, ipSubnet)
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.memory.Add(jar, ipSubnet)
+	if err != nil {
+		return nil, err
+	}
+	return newIPSubnet, nil
 }
 
 func (s *Storage) Update(jar string, ipSubnet common.IPSubnet) error {
+	if err := s.sqlstorage.Update(jar, ipSubnet); err != nil {
+		return err
+	}
 	return s.memory.Update(jar, ipSubnet)
 }
 
 func (s *Storage) Delete(jar string, subnet string) error {
+	if err := s.sqlstorage.Delete(jar, subnet); err != nil {
+		return err
+	}
 	return s.memory.Delete(jar, subnet)
 }
 
 func (s *Storage) Clear(jar string) error {
+	if err := s.sqlstorage.Clear(jar); err != nil {
+		return err
+	}
 	s.memory.Clear(jar)
 	return nil
 }
