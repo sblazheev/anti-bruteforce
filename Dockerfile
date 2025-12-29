@@ -1,7 +1,7 @@
 FROM golang:1.24 AS build
 
-ENV BIN_FILE /opt/app/anti_bruteforce
-ENV CODE_DIR /go/src/
+ENV BIN_FILE=/opt/app/anti_bruteforce
+ENV CODE_DIR=/go/src/
 
 WORKDIR ${CODE_DIR}
 
@@ -23,11 +23,12 @@ RUN CGO_ENABLED=0 go build -v \
 
 FROM alpine:latest
 
-ENV BIN_FILE /opt/app/anti_bruteforce
+ENV BIN_FILE=/opt/app/anti_bruteforce
+ENV CONFIG_FILE=/etc/anti_bruteforce/config.yaml
 
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
-ENV CONFIG_FILE /etc/anti_bruteforce/config.yaml
+
 COPY ./configs/config.yaml ${CONFIG_FILE}
 
-CMD ${BIN_FILE} -config ${CONFIG_FILE}
+CMD ["${BIN_FILE}", "-config", "${CONFIG_FILE}"]

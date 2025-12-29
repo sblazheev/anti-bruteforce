@@ -1,12 +1,12 @@
 services:
   db:
     image: postgres:17
-    container_name: calendar_db_test
+    container_name:  anti_bruteforce_db_test
     restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
-      POSTGRES_DB: calendar
+      POSTGRES_DB:  anti_bruteforce_db
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d calendar" ]
       interval: 5s
@@ -16,136 +16,54 @@ services:
       - "5432:5432"
     volumes:
       - sqldatatest:/var/lib/postgresql/data
-  mq:
-    image: rabbitmq:4-management
-    container_name: calendar_mq_test
-    healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "status" ]
-      interval: 5s
-      timeout: 10s
-      retries: 15
-    restart: always
-    ports:
-      - "5672:5672"        # AMQP
-      - "15672:15672"      # Management UI
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
   migrate:
-    image: calendar_test:develop
-    container_name: calendar_migrate_test
-    #build:
-    #  context: ../
-    #  dockerfile: ./build/DockerfileCalendar
-    entrypoint: ["/opt/calendar/calendar"]
+    image: anti_bruteforce:develop
+    container_name: anti_bruteforce_migrate
+    build:
+      context: ../
+      dockerfile: ./Dockerfile
+    entrypoint: ["/opt/app/anti_bruteforce"]
     command: ["migrate"]
     depends_on:
       db:
         condition: service_healthy
     environment:
       TYPE: sql
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-  calendar:
-    image: calendar_test:develop
-    container_name: calendar_app_test
+      DSN: "postgresql://user:pass@db:5432/anti_bruteforce_db?sslmode=disable"
+  anti_bruteforce:
+    image: anti_bruteforce:develop
+    container_name: anti_bruteforce_app
     restart: always
     build:
       context: ../
-      dockerfile: ./build/DockerfileCalendar
-    entrypoint: ["/opt/calendar/calendar"]
-    command: ["serve"]
+      dockerfile: ./Dockerfile
+    entrypoint: ["/opt/app/anti_bruteforce"]
+    command: ["serve", "--config", "/etc/anti_bruteforce/config.yaml"]
     depends_on:
-      #db:
-      #  condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
+      - db
+      - migrate
     environment:
-      OVERLAPPING: false
+      OVERLAPPING: true
       TYPE: sql
       HOST: "0.0.0.0"
-      PORT: 8080
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
+      PORT: 80
+      DSN: "postgresql://user:pass@db:5432/anti_bruteforce_db?sslmode=disable"
     ports:
-      - "8080:8080"
-  calendarGrpc:
-    image: calendar_test:develop
-    container_name: calendar_grpc_app_test
-    restart: always
-    entrypoint: ["/opt/calendar/calendar"]
-    command: ["grpc"]
-    depends_on:
-      calendar:
-        condition: service_started
-      migrate:
-        condition: service_completed_successfully
-    environment:
-      OVERLAPPING: false
-      TYPE: sql
-      HOST: "0.0.0.0"
-      PORT: 8081
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-    ports:
-      - "8081:8081"
-  scheduler:
-    image: scheduler_test:develop
-    container_name: calendar_scheduler_app_test
-    restart: always
-    build:
-      context: ../
-      dockerfile: ./build/DockerfileScheduler
-    entrypoint: [ "/opt/calendar/calendar_scheduler" ]
-    command: [ "scheduler"]
-    depends_on:
-      db:
-        condition: service_healthy
-      mq:
-        condition: service_healthy
-    environment:
-      TYPE: sql
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-      AMPQ: "amqp://guest:guest@mq:5672"
-      NOTIFY: calendar_notify
-      INTERVAL: 1
-  sender:
-    image: sender_test:develop
-    container_name: calendar_sender_app_test
-    restart: always
-    build:
-      context: ../
-      dockerfile: ./build/DockerfileSender
-    entrypoint: [ "/opt/calendar/calendar_sender" ]
-    command: [ "sender"]
-    depends_on:
-      db:
-        condition: service_healthy
-      mq:
-        condition: service_healthy
-    environment:
-      TYPE: sql
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-      AMPQ: "amqp://guest:guest@mq:5672"
-      NOTIFY: calendar_notify
-      INTERVAL: 1
+      - "80:80"
+    volumes:
+      - ../configs/config.yaml:/etc/anti_bruteforce/config.yaml
   tests:
-    image: tests:develop
-    container_name: calendar_tests_app_test
+    image: anti_bruteforce_tests:develop
+    container_name: anti_bruteforce_app_test
     build:
       context: ../
-      dockerfile: ./build/DockerfileTestRunner
-    entrypoint: [ "/app/calendar-tests" ]
+      dockerfile: ./DockerfileTest
+    entrypoint: [ "/app/anti_bruteforce-tests" ]
     command: [ "-test.v"]
     depends_on:
-      #db:
-      #  condition: service_healthy
-      #mq:
-      #  condition: service_healthy
-      sender:
-        condition: service_started
-      scheduler:
-        condition: service_started
-      calendar:
-        condition: service_started
-      calendarGrpc:
+      db:
+        condition: service_healthy
+      anti_bruteforce:
         condition: service_started
 volumes:
   sqldatatest:

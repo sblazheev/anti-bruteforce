@@ -48,7 +48,7 @@ var (
 				jsonData = "{\"login\":\"" + cliValue + "\"}"
 			case "delip":
 				urlRequest = fmt.Sprintf(delBucket, cliHost)
-				jsonData = "{\"password\":\"" + cliValue + "\"}"
+				jsonData = "{\"ip\":\"" + cliValue + "\"}"
 			}
 
 			req, err := http.NewRequest("POST", urlRequest, bytes.NewBuffer([]byte(jsonData)))

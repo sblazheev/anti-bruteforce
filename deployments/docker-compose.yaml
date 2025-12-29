@@ -3,38 +3,38 @@ version: "3"
 services:
   db:
     image: postgres:17
-    container_name: calendar_db
+    container_name: anti_bruteforce_db
     restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
-      POSTGRES_DB: calendar
+      POSTGRES_DB: anti_bruteforce
     ports:
       - "5432:5432"
     volumes:
       - sqldata:/var/lib/postgresql/data
   migrate:
-    image: calendar:develop
-    container_name: calendar_migrate
+    image: anti_bruteforce:develop
+    container_name: anti_bruteforce_migrate
     build:
       context: ../
-      dockerfile: ./build/DockerfileCalendar
-    entrypoint: ["/opt/calendar/calendar"]
+      dockerfile: ./Dockerfile
+    entrypoint: ["/opt/app/anti_bruteforce"]
     command: ["migrate"]
     depends_on:
       - db
     environment:
       TYPE: sql
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-  calendar:
-    image: calendar:develop
-    container_name: calendar_app
+      DSN: "postgresql://user:pass@db:5432/anti_bruteforce_db?sslmode=disable"
+  anti_bruteforce:
+    image: anti_bruteforce:develop
+    container_name: anti_bruteforce_app
     restart: always
     build:
       context: ../
-      dockerfile: ./build/DockerfileCalendar
-    entrypoint: ["/opt/calendar/calendar"]
-    command: ["serve", "--config", "/etc/calendar/config.yaml"]
+      dockerfile: ./Dockerfile
+    entrypoint: ["/opt/app/anti_bruteforce"]
+    command: ["serve", "--config", "/etc/anti_bruteforce/config.yaml"]
     depends_on:
       - db
       - migrate
@@ -43,46 +43,10 @@ services:
       TYPE: sql
       HOST: "0.0.0.0"
       PORT: 80
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
+      DSN: "postgresql://user:pass@db:5432/anti_bruteforce_db?sslmode=disable"
     ports:
       - "80:80"
     volumes:
-      - ../configs/config.yaml:/etc/calendar/config.yaml
-  scheduler:
-    image: scheduler:develop
-    container_name: scheduler_app
-    restart: always
-    build:
-      context: ../
-      dockerfile: ./build/DockerfileScheduler
-    entrypoint: [ "/opt/calendar/calendar_scheduler" ]
-    command: [ "scheduler"]
-    depends_on:
-      - db
-      - mq
-    environment:
-      TYPE: sql
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-      AMPQ: "amqp://guest:guest@mq:5672"
-      NOTIFY: calendar_notify
-      INTERVAL: 10
-  sender:
-    image: sender:develop
-    container_name: sender_app
-    restart: always
-    build:
-      context: ../
-      dockerfile: ./build/DockerfileSender
-    entrypoint: [ "/opt/calendar/calendar_sender" ]
-    command: [ "sender"]
-    depends_on:
-      - db
-      - mq
-    environment:
-      TYPE: sql
-      DSN: "postgresql://user:pass@db:5432/calendar?sslmode=disable"
-      AMPQ: "amqp://guest:guest@mq:5672"
-      NOTIFY: calendar_notify
-      INTERVAL: 10
+      - ../configs/config.yaml:/etc/anti_bruteforce/config.yaml
 volumes:
   sqldata:
