@@ -70,8 +70,8 @@ func (s *Storage) PrepareStorage(_ common.LoggerInterface) error {
 	return nil
 }
 
-func (s *Storage) IsOverlapping(_ string, _ *common.IPSubnet) (bool, error) {
-	return false, nil
+func (s *Storage) IsOverlapping(jar string, subnet *common.IPSubnet) (bool, error) {
+	return s.sqlstorage.IsOverlapping(jar, subnet)
 }
 
 func (s *Storage) InSubNet(jar string, ip string) (bool, error) {

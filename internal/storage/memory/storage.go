@@ -25,7 +25,7 @@ func (s *Storage) Add(_ string, ipSubnet common.IPSubnet) (*common.IPSubnet, err
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, exists := s.IPSubnets[ipSubnet.Subnet]; exists {
-		return &ipSubnet, common.ErrIPSubnetAlreadyExists
+		return &ipSubnet, nil
 	}
 
 	s.IPSubnets[ipSubnet.Subnet] = &ipSubnet
@@ -60,10 +60,6 @@ func (s *Storage) Update(_ string, ipSubnet common.IPSubnet) error {
 func (s *Storage) Delete(_ string, subnet string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	/*if _, exists := s.IPSubnets[subnet]; !exists {
-		return common.ErrIPSubnetNotFound
-	}*/
 
 	delete(s.IPSubnets, subnet)
 	return nil

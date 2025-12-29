@@ -42,7 +42,7 @@ func (s *Storage) Close() error {
 }
 
 func (s *Storage) Add(jar string, ipSubnet common.IPSubnet) (*common.IPSubnet, error) {
-	sql := `INSERT INTO %s("sub_net") VALUES(:sub_net)`
+	sql := `INSERT INTO %s("sub_net") VALUES(:sub_net) ON CONFLICT DO NOTHING`
 	sql = fmt.Sprintf(sql, jar)
 	_, err := s.db.NamedExecContext(*s.ctx, sql, ipSubnet)
 	if err != nil {
@@ -130,7 +130,8 @@ func (s *Storage) PrepareStorage(log common.LoggerInterface) error {
 
 func (s *Storage) IsOverlapping(jar string, subnet *common.IPSubnet) (bool, error) {
 	count := 0
-	sql := `SELECT count(*) from %s jar where $1::cidr && jar.sub_net`
+	sql := `SELECT count(*) FROM %s WHERE $1::cidr << "sub_net"::cidr or "sub_net"::cidr << $1::cidr 
+                            or "sub_net"::cidr = $1::cidr`
 	sql = fmt.Sprintf(sql, jar)
 	err := s.db.GetContext(*s.ctx, &count, sql, subnet.Subnet)
 	if err != nil {

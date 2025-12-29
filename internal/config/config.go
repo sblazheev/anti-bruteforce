@@ -26,7 +26,7 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Overlapped bool
+	Overlapped bool `yaml:"overlapped" env:"OVERLAPPED"`
 }
 
 type LogConfig struct {

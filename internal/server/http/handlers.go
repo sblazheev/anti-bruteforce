@@ -51,7 +51,7 @@ func NewHandler(app app.App, logger common.LoggerInterface) *HTTPHandler {
 	return handler
 }
 
-func (h *HTTPHandler) parseRequest(dtoRequest *dto.RequestNet, w http.ResponseWriter, r *http.Request) bool {
+func (h *HTTPHandler) parseRequestNet(dtoRequest *dto.RequestNet, w http.ResponseWriter, r *http.Request) bool {
 	if err := json.NewDecoder(r.Body).Decode(dtoRequest); err != nil {
 		h.logger.Debug("deleteWhiteList-Invalid request body", "err", err)
 		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid request body", err, w)
@@ -86,7 +86,7 @@ func (h *HTTPHandler) parseRequest(dtoRequest *dto.RequestNet, w http.ResponseWr
 // @Router       /delete/white-list [post] .
 func (h *HTTPHandler) deleteWhiteList(w http.ResponseWriter, r *http.Request) {
 	var dtoRequest dto.RequestNet
-	if !h.parseRequest(&dtoRequest, w, r) {
+	if !h.parseRequestNet(&dtoRequest, w, r) {
 		return
 	}
 	err := h.app.DeleteWhiteList(dtoRequest.Net)
@@ -111,7 +111,7 @@ func (h *HTTPHandler) deleteWhiteList(w http.ResponseWriter, r *http.Request) {
 // @Router       /delete/black-list [post] .
 func (h *HTTPHandler) deleteBlackList(w http.ResponseWriter, r *http.Request) {
 	var dtoRequest dto.RequestNet
-	if !h.parseRequest(&dtoRequest, w, r) {
+	if !h.parseRequestNet(&dtoRequest, w, r) {
 		return
 	}
 	err := h.app.DeleteBlackList(dtoRequest.Net)
@@ -135,31 +135,16 @@ func (h *HTTPHandler) deleteBlackList(w http.ResponseWriter, r *http.Request) {
 // @Failure		 503  {object} JSONErrorResponse
 // @Router       /add/black-list [post] .
 func (h *HTTPHandler) addBlackList(w http.ResponseWriter, r *http.Request) {
-	var dtoRequest *dto.RequestNet
-	if err := json.NewDecoder(r.Body).Decode(&dtoRequest); err != nil {
-		h.logger.Debug("addBlackList-Invalid request body", "err", err)
-		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid request body", err, w)
+	var dtoRequest dto.RequestNet
+	if !h.parseRequestNet(&dtoRequest, w, r) {
 		return
 	}
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(dtoRequest)
+	_, err := h.app.AddBlackList(dtoRequest.Net)
 	if err != nil {
-		h.logger.Debug("addBlackList-Invalid format Event", "err", err)
-		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid format Event", err, w)
-		return
-	}
-
-	_, err = netip.ParsePrefix(dtoRequest.Net)
-	if err != nil {
-		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest),
-			"Bad Request", common.ErrFormatIp, w)
-	}
-
-	_, err = h.app.AddBlackList(dtoRequest.Net)
-	if err != nil {
-		if errors.Is(err, common.ErrDuplicateValue) {
+		if errors.Is(err, common.ErrIPSubnetOverlapped) {
 			JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest),
-				"Bad Request", common.ErrDuplicateValue, w)
+				"Bad Request", common.ErrIPSubnetOverlapped, w)
+			return
 		}
 		h.logger.Error("AddBlackList", "err", err)
 		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
@@ -180,28 +165,17 @@ func (h *HTTPHandler) addBlackList(w http.ResponseWriter, r *http.Request) {
 // @Failure		 503  {object} JSONErrorResponse
 // @Router       /add/white-list [post] .
 func (h *HTTPHandler) addWhiteList(w http.ResponseWriter, r *http.Request) {
-	var dtoRequest *dto.RequestNet
-	if err := json.NewDecoder(r.Body).Decode(&dtoRequest); err != nil {
-		h.logger.Debug("addWhiteList-Invalid request body", "err", err)
-		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid request body", err, w)
+	var dtoRequest dto.RequestNet
+	if !h.parseRequestNet(&dtoRequest, w, r) {
 		return
 	}
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(dtoRequest)
+	_, err := h.app.AddWhiteList(dtoRequest.Net)
 	if err != nil {
-		h.logger.Debug("addWhiteList-Invalid format Event", "err", err)
-		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest), "Invalid format Event", err, w)
-		return
-	}
-
-	_, err = netip.ParsePrefix(dtoRequest.Net)
-	if err != nil {
-		JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest),
-			"Bad Request", common.ErrFormatIp, w)
-	}
-
-	_, err = h.app.AddWhiteList(dtoRequest.Net)
-	if err != nil {
+		if errors.Is(err, common.ErrIPSubnetOverlapped) {
+			JSONError(http.StatusBadRequest, strconv.Itoa(http.StatusBadRequest),
+				"Bad Request", common.ErrIPSubnetOverlapped, w)
+			return
+		}
 		h.logger.Error("addWhiteList", "err", err)
 		JSONError(http.StatusServiceUnavailable, strconv.Itoa(http.StatusServiceUnavailable),
 			"Service Unavailable", common.ErrServiceUnavailable, w)

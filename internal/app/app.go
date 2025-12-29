@@ -20,6 +20,7 @@ type App struct {
 	storageIP        *bucket.StorageBuckets
 	storageLogin     *bucket.StorageBuckets
 	storagePassword  *bucket.StorageBuckets
+	overlappedNet    bool
 }
 
 func NewStorageDriver(ctx *context.Context, c config.StorageConfig) (common.StorageDriverInterface, error) {
@@ -77,6 +78,7 @@ func New(ctx *context.Context, cfg *config.Config, logger common.LoggerInterface
 		storageIP:        storageIP,
 		storageWhiteList: storageWhiteList,
 		storageBlackList: storageBlackList,
+		overlappedNet:    cfg.App.Overlapped,
 	}, nil
 }
 
@@ -111,12 +113,44 @@ func (app *App) DeleteLoginBucket(ip string) bool {
 }
 
 func (app *App) AddBlackList(net string) (*common.IPSubnet, error) {
+	if !app.overlappedNet {
+		overlapped, err := app.storageBlackList.IsOverlapping(&common.IPSubnet{Subnet: net})
+		if err != nil {
+			return nil, err
+		}
+		if overlapped {
+			return nil, common.ErrIPSubnetOverlapped
+		}
+		overlapped, err = app.storageWhiteList.IsOverlapping(&common.IPSubnet{Subnet: net})
+		if err != nil {
+			return nil, err
+		}
+		if overlapped {
+			return nil, common.ErrIPSubnetOverlapped
+		}
+	}
 	return app.storageBlackList.Add(common.IPSubnet{
 		Subnet: net,
 	})
 }
 
 func (app *App) AddWhiteList(net string) (*common.IPSubnet, error) {
+	if !app.overlappedNet {
+		overlapped, err := app.storageWhiteList.IsOverlapping(&common.IPSubnet{Subnet: net})
+		if err != nil {
+			return nil, err
+		}
+		if overlapped {
+			return nil, common.ErrIPSubnetOverlapped
+		}
+		overlapped, err = app.storageBlackList.IsOverlapping(&common.IPSubnet{Subnet: net})
+		if err != nil {
+			return nil, err
+		}
+		if overlapped {
+			return nil, common.ErrIPSubnetOverlapped
+		}
+	}
 	return app.storageWhiteList.Add(common.IPSubnet{
 		Subnet: net,
 	})

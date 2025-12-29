@@ -1,5 +1,5 @@
 app:
-
+  overlapped: true
 storage:
   type: sqlproxy # sql / memory / sqlproxy
   dsn: "postgres://postgres:postgres@postgres:5432/anti_bruteforce"
